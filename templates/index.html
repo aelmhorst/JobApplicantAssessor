@@ -1,11 +1,49 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="jumbotron">
-    <h1 class="display-4">Welcome to the Job Applicant Assessment</h1>
-    <p class="lead">We're excited to learn more about you! Click the button below to start your application.</p>
-    <hr class="my-4">
-    <p>You'll be asked to answer three essay questions. Take your time and showcase your best work.</p>
-    <a class="btn btn-primary btn-lg" href="{{ url_for('main.apply') }}" role="button">Start Application</a>
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body text-center">
+                <h1 class="display-4 mb-4">Welcome to the Job Applicant Assessment</h1>
+                <p class="lead mb-4">We're excited to learn more about you! Take the first step towards your dream job by starting your application today.</p>
+                <hr class="my-4">
+                <p class="mb-4">You'll be asked to answer three essay questions. Take your time and showcase your best work.</p>
+                <a class="btn btn-primary btn-lg" href="{{ url_for('main.apply') }}" role="button">
+                    <i class="fas fa-paper-plane me-2"></i>Start Application
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-edit fa-3x mb-3 text-primary"></i>
+                <h5 class="card-title">Customized Essays</h5>
+                <p class="card-text">Answer thought-provoking questions tailored to showcase your skills and experience.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-robot fa-3x mb-3 text-primary"></i>
+                <h5 class="card-title">AI-Powered Evaluation</h5>
+                <p class="card-text">Get fair and unbiased assessments of your responses using cutting-edge AI technology.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-chart-line fa-3x mb-3 text-primary"></i>
+                <h5 class="card-title">Comprehensive Feedback</h5>
+                <p class="card-text">Receive detailed feedback to help you understand your strengths and areas for improvement.</p>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
