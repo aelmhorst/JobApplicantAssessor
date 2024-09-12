@@ -1,5 +1,5 @@
 :root {
-    --bolt-gold: #FFD700;
+    --bolt-gold: #e6ff00;
     --bolt-lemon-chiffon: #FFFACD;
     --bolt-goldenrod: #DAA520;
     --linkedin-gray: #86888a;
@@ -20,7 +20,7 @@ body {
 }
 
 .navbar-brand {
-    color: var(--bolt-gold) !important;
+    color: var(--linkedin-black) !important;
     font-weight: bold;
 }
 
@@ -34,14 +34,17 @@ body {
 }
 
 .btn-primary {
-    background-color: var(--bolt-gold);
-    border-color: var(--bolt-gold);
+    background-color: var(--linkedin-black);
+    color: var(--bolt-gold);
+    border-color: var(--linkedin-black);
+    border-radius: 32px;
 }
 
 .btn-primary:hover,
 .btn-primary:focus {
-    background-color: var(--bolt-goldenrod);
-    border-color: var(--bolt-goldenrod);
+    background-color: var(--bolt-gold);
+    color: var(--linkedin-black);
+    border-color: var(--bolt-gold);
 }
 
 .card {
