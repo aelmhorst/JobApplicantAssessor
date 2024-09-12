@@ -1,7 +1,7 @@
 :root {
-    --linkedin-blue: #0a66c2;
-    --linkedin-light-blue: #e8f3ff;
-    --linkedin-dark-blue: #004182;
+    --bolt-gold: #FFD700;
+    --bolt-lemon-chiffon: #FFFACD;
+    --bolt-goldenrod: #DAA520;
     --linkedin-gray: #86888a;
     --linkedin-light-gray: #f3f2ef;
     --linkedin-black: #191919;
@@ -20,7 +20,7 @@ body {
 }
 
 .navbar-brand {
-    color: var(--linkedin-blue) !important;
+    color: var(--bolt-gold) !important;
     font-weight: bold;
 }
 
@@ -30,18 +30,18 @@ body {
 
 .navbar-light .navbar-nav .nav-link:hover,
 .navbar-light .navbar-nav .nav-link:focus {
-    color: var(--linkedin-dark-blue);
+    color: var(--bolt-goldenrod);
 }
 
 .btn-primary {
-    background-color: var(--linkedin-blue);
-    border-color: var(--linkedin-blue);
+    background-color: var(--bolt-gold);
+    border-color: var(--bolt-gold);
 }
 
 .btn-primary:hover,
 .btn-primary:focus {
-    background-color: var(--linkedin-dark-blue);
-    border-color: var(--linkedin-dark-blue);
+    background-color: var(--bolt-goldenrod);
+    border-color: var(--bolt-goldenrod);
 }
 
 .card {
@@ -63,8 +63,8 @@ body {
 }
 
 .form-control:focus {
-    border-color: var(--linkedin-blue);
-    box-shadow: 0 0 0 1px var(--linkedin-blue);
+    border-color: var(--bolt-gold);
+    box-shadow: 0 0 0 1px var(--bolt-gold);
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -87,21 +87,26 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .table thead th {
-    background-color: var(--linkedin-light-blue);
-    color: var(--linkedin-dark-blue);
+    background-color: var(--bolt-lemon-chiffon);
+    color: var(--bolt-goldenrod);
     font-weight: 600;
     border-bottom: none;
 }
 
 .pagination .page-link {
-    color: var(--linkedin-blue);
+    color: var(--bolt-gold);
 }
 
 .pagination .page-item.active .page-link {
-    background-color: var(--linkedin-blue);
-    border-color: var(--linkedin-blue);
+    background-color: var(--bolt-gold);
+    border-color: var(--bolt-gold);
 }
 
 .text-muted {
     color: var(--linkedin-gray) !important;
+}
+
+.card-body .fas,
+.card-body i.fas {
+    color: var(--bolt-goldenrod) !important;
 }
