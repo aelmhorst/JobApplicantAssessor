@@ -21,33 +21,22 @@
             <span class="text-danger">{{ error }}</span>
         {% endfor %}
     </div>
-    <div class="mb-3">
-        {{ form.essay1.label(class="form-label") }}
-        <p>Describe a challenging situation you've faced in your professional life and how you overcame it.</p>
-        {{ form.essay1(class="form-control", rows=5) }}
-        {% for error in form.essay1.errors %}
-            <span class="text-danger">{{ error }}</span>
-        {% endfor %}
-        <div id="essay1-counter" class="text-muted"></div>
-    </div>
-    <div class="mb-3">
-        {{ form.essay2.label(class="form-label") }}
-        <p>What are your career goals for the next five years, and how does this position align with them?</p>
-        {{ form.essay2(class="form-control", rows=5) }}
-        {% for error in form.essay2.errors %}
-            <span class="text-danger">{{ error }}</span>
-        {% endfor %}
-        <div id="essay2-counter" class="text-muted"></div>
-    </div>
-    <div class="mb-3">
-        {{ form.essay3.label(class="form-label") }}
-        <p>Describe a time when you had to learn a new skill quickly. How did you approach the learning process?</p>
-        {{ form.essay3(class="form-control", rows=5) }}
-        {% for error in form.essay3.errors %}
-            <span class="text-danger">{{ error }}</span>
-        {% endfor %}
-        <div id="essay3-counter" class="text-muted"></div>
-    </div>
+    {% for i in range(1, 4) %}
+        {% set essay_field = 'essay' ~ i %}
+        <div class="mb-3">
+            {{ form[essay_field].label(class="form-label") }}
+            {% if active_questions[i-1] %}
+                <p>{{ active_questions[i-1].question_text }}</p>
+            {% else %}
+                <p>Please answer the following question:</p>
+            {% endif %}
+            {{ form[essay_field](class="form-control", rows=5) }}
+            {% for error in form[essay_field].errors %}
+                <span class="text-danger">{{ error }}</span>
+            {% endfor %}
+            <div id="{{ essay_field }}-counter" class="text-muted"></div>
+        </div>
+    {% endfor %}
     <button type="submit" class="btn btn-primary">{% if existing_applicant %}Update{% else %}Submit{% endif %} Application</button>
 </form>
 {% endblock %}

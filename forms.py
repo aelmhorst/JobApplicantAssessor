@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, TextAreaField, PasswordField
+from wtforms import StringField, TextAreaField, PasswordField, BooleanField
 from wtforms.validators import DataRequired, Email, Length
 from email_validator import validate_email, EmailNotValidError
 
@@ -22,3 +22,7 @@ class LoginForm(FlaskForm):
 
 class SearchForm(FlaskForm):
     search = StringField('Search', validators=[DataRequired()])
+
+class EssayQuestionForm(FlaskForm):
+    question_text = TextAreaField('Question Text', validators=[DataRequired(), Length(max=500)])
+    is_active = BooleanField('Active')

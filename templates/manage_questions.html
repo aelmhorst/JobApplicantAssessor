@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Manage Essay Questions</h2>
+<a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-secondary mb-3">Back to Dashboard</a>
+
+<h3>Add New Question</h3>
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <div class="mb-3">
+        {{ form.question_text.label(class="form-label") }}
+        {{ form.question_text(class="form-control") }}
+    </div>
+    <div class="mb-3 form-check">
+        {{ form.is_active(class="form-check-input") }}
+        {{ form.is_active.label(class="form-check-label") }}
+    </div>
+    <button type="submit" class="btn btn-primary">Add Question</button>
+</form>
+
+<h3 class="mt-4">Existing Questions</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Question</th>
+            <th>Active</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for question in questions %}
+        <tr>
+            <td>{{ question.id }}</td>
+            <td>{{ question.question_text }}</td>
+            <td>{{ "Yes" if question.is_active else "No" }}</td>
+            <td>
+                <a href="{{ url_for('main.edit_question', id=question.id) }}" class="btn btn-sm btn-primary">Edit</a>
+                <form action="{{ url_for('main.delete_question', id=question.id) }}" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this question?')">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -16,3 +16,11 @@ class Applicant(db.Model):
 
     def __repr__(self):
         return f'<Applicant {self.name}>'
+
+class EssayQuestion(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    question_text = db.Column(db.Text, nullable=False)
+    is_active = db.Column(db.Boolean, default=True)
+
+    def __repr__(self):
+        return f'<EssayQuestion {self.id}>'

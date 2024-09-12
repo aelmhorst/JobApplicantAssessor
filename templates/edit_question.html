@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Edit Essay Question</h2>
+<a href="{{ url_for('main.manage_questions') }}" class="btn btn-secondary mb-3">Back to Questions</a>
+
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <div class="mb-3">
+        {{ form.question_text.label(class="form-label") }}
+        {{ form.question_text(class="form-control") }}
+    </div>
+    <div class="mb-3 form-check">
+        {{ form.is_active(class="form-check-input") }}
+        {{ form.is_active.label(class="form-check-label") }}
+    </div>
+    <button type="submit" class="btn btn-primary">Update Question</button>
+</form>
+{% endblock %}

@@ -1,6 +1,6 @@
 from flask import Blueprint, current_app, render_template, request, redirect, url_for, flash, session, send_file
-from models import db, Applicant
-from forms import ApplicationForm, LoginForm, SearchForm
+from models import db, Applicant, EssayQuestion
+from forms import ApplicationForm, LoginForm, SearchForm, EssayQuestionForm
 from sqlalchemy.exc import SQLAlchemyError
 from ai_scoring import evaluate_essay, parse_ai_response
 from functools import wraps
@@ -33,21 +33,20 @@ def apply():
         if existing_applicant:
             form = ApplicationForm(obj=existing_applicant)
 
+    active_questions = EssayQuestion.query.filter_by(is_active=True).order_by(EssayQuestion.id).limit(3).all()
+
     if form.validate_on_submit():
         try:
             existing_applicant = Applicant.query.filter_by(email=form.email.data).first()
             
             # AI Scoring
-            essay_prompts = [
-                "Describe a challenging situation you've faced in your professional life and how you overcame it.",
-                "What are your career goals for the next five years, and how does this position align with them?",
-                "Describe a time when you had to learn a new skill quickly. How did you approach the learning process?"
-            ]
             essay_scores = []
             essay_feedbacks = []
             
             for i, essay in enumerate([form.essay1.data, form.essay2.data, form.essay3.data], start=1):
-                ai_response = evaluate_essay(essay, essay_prompts[i-1])
+                question = active_questions[i-1] if i <= len(active_questions) else None
+                prompt = question.question_text if question else f"Essay {i}"
+                ai_response = evaluate_essay(essay, prompt)
                 score, feedback = parse_ai_response(ai_response)
                 essay_scores.append(score or 0)
                 essay_feedbacks.append(feedback or 'No feedback available')
@@ -90,7 +89,7 @@ def apply():
             for error in errors:
                 flash(f"{field.capitalize()}: {error}", 'error')
     
-    return render_template('application.html', form=form, existing_applicant=existing_applicant)
+    return render_template('application.html', form=form, existing_applicant=existing_applicant, active_questions=active_questions)
 
 @main.route('/confirmation')
 def confirmation():
@@ -179,3 +178,42 @@ def export_csv():
                      mimetype='text/csv',
                      as_attachment=True,
                      attachment_filename='applicants.csv')
+
+@main.route('/admin/questions', methods=['GET', 'POST'])
+@admin_required
+def manage_questions():
+    questions = EssayQuestion.query.all()
+    form = EssayQuestionForm()
+
+    if form.validate_on_submit():
+        new_question = EssayQuestion(question_text=form.question_text.data, is_active=form.is_active.data)
+        db.session.add(new_question)
+        db.session.commit()
+        flash('New question added successfully!', 'success')
+        return redirect(url_for('main.manage_questions'))
+
+    return render_template('manage_questions.html', questions=questions, form=form)
+
+@main.route('/admin/questions/<int:id>/edit', methods=['GET', 'POST'])
+@admin_required
+def edit_question(id):
+    question = EssayQuestion.query.get_or_404(id)
+    form = EssayQuestionForm(obj=question)
+
+    if form.validate_on_submit():
+        question.question_text = form.question_text.data
+        question.is_active = form.is_active.data
+        db.session.commit()
+        flash('Question updated successfully!', 'success')
+        return redirect(url_for('main.manage_questions'))
+
+    return render_template('edit_question.html', form=form, question=question)
+
+@main.route('/admin/questions/<int:id>/delete', methods=['POST'])
+@admin_required
+def delete_question(id):
+    question = EssayQuestion.query.get_or_404(id)
+    db.session.delete(question)
+    db.session.commit()
+    flash('Question deleted successfully!', 'success')
+    return redirect(url_for('main.manage_questions'))
