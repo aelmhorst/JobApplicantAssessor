@@ -3,13 +3,59 @@
 {% block content %}
 <h2>Admin Dashboard</h2>
 <a href="{{ url_for('main.admin_logout') }}" class="btn btn-secondary mb-3">Logout</a>
+<a href="{{ url_for('main.export_csv') }}" class="btn btn-success mb-3">Export CSV</a>
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <h4>Summary Statistics</h4>
+        <p>Total Applicants: {{ total_applicants }}</p>
+        <p>Average Score: {{ "%.2f"|format(average_score) }}</p>
+    </div>
+    <div class="col-md-6">
+        <form method="GET" action="{{ url_for('main.admin_dashboard') }}">
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" placeholder="Search by name or email" name="search" value="{{ search_query }}">
+                <button class="btn btn-outline-secondary" type="submit">Search</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <table class="table table-striped">
     <thead>
         <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Total Score</th>
+            <th>
+                <a href="{{ url_for('main.admin_dashboard', sort_by='id', sort_order='asc' if sort_by == 'id' and sort_order == 'desc' else 'desc', search=search_query) }}">
+                    ID
+                    {% if sort_by == 'id' %}
+                        <i class="fas fa-sort-{{ 'up' if sort_order == 'asc' else 'down' }}"></i>
+                    {% endif %}
+                </a>
+            </th>
+            <th>
+                <a href="{{ url_for('main.admin_dashboard', sort_by='name', sort_order='asc' if sort_by == 'name' and sort_order == 'desc' else 'desc', search=search_query) }}">
+                    Name
+                    {% if sort_by == 'name' %}
+                        <i class="fas fa-sort-{{ 'up' if sort_order == 'asc' else 'down' }}"></i>
+                    {% endif %}
+                </a>
+            </th>
+            <th>
+                <a href="{{ url_for('main.admin_dashboard', sort_by='email', sort_order='asc' if sort_by == 'email' and sort_order == 'desc' else 'desc', search=search_query) }}">
+                    Email
+                    {% if sort_by == 'email' %}
+                        <i class="fas fa-sort-{{ 'up' if sort_order == 'asc' else 'down' }}"></i>
+                    {% endif %}
+                </a>
+            </th>
+            <th>
+                <a href="{{ url_for('main.admin_dashboard', sort_by='total_score', sort_order='asc' if sort_by == 'total_score' and sort_order == 'desc' else 'desc', search=search_query) }}">
+                    Total Score
+                    {% if sort_by == 'total_score' %}
+                        <i class="fas fa-sort-{{ 'up' if sort_order == 'asc' else 'down' }}"></i>
+                    {% endif %}
+                </a>
+            </th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -27,4 +73,18 @@
         {% endfor %}
     </tbody>
 </table>
+
+<nav aria-label="Page navigation">
+    <ul class="pagination">
+        {% for page in pagination.iter_pages() %}
+            {% if page %}
+                <li class="page-item {{ 'active' if page == pagination.page else '' }}">
+                    <a class="page-link" href="{{ url_for('main.admin_dashboard', page=page, search=search_query, sort_by=sort_by, sort_order=sort_order) }}">{{ page }}</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+</nav>
 {% endblock %}

@@ -1,9 +1,11 @@
-from flask import Blueprint, current_app, render_template, request, redirect, url_for, flash, session
+from flask import Blueprint, current_app, render_template, request, redirect, url_for, flash, session, send_file
 from models import db, Applicant
-from forms import ApplicationForm, LoginForm
+from forms import ApplicationForm, LoginForm, SearchForm
 from sqlalchemy.exc import SQLAlchemyError
 from ai_scoring import evaluate_essay, parse_ai_response
 from functools import wraps
+import csv
+import io
 
 main = Blueprint('main', __name__)
 
@@ -27,16 +29,11 @@ def apply():
 
     if request.method == 'GET' and request.args.get('email'):
         email = request.args.get('email')
-        current_app.logger.debug(f"Checking for existing applicant with email: {email}")
         existing_applicant = Applicant.query.filter_by(email=email).first()
         if existing_applicant:
-            current_app.logger.debug(f"Existing applicant found: {existing_applicant}")
             form = ApplicationForm(obj=existing_applicant)
-        else:
-            current_app.logger.debug("No existing applicant found")
 
     if form.validate_on_submit():
-        current_app.logger.debug("Form validated successfully")
         try:
             existing_applicant = Applicant.query.filter_by(email=form.email.data).first()
             
@@ -52,11 +49,10 @@ def apply():
             for i, essay in enumerate([form.essay1.data, form.essay2.data, form.essay3.data], start=1):
                 ai_response = evaluate_essay(essay, essay_prompts[i-1])
                 score, feedback = parse_ai_response(ai_response)
-                essay_scores.append(score or 0)  # Use 0 if score is None
-                essay_feedbacks.append(feedback or 'No feedback available')  # Use a default message if feedback is None
+                essay_scores.append(score or 0)
+                essay_feedbacks.append(feedback or 'No feedback available')
 
             if existing_applicant:
-                current_app.logger.debug(f"Updating existing applicant: {existing_applicant}")
                 form.populate_obj(existing_applicant)
                 existing_applicant.essay1_score = essay_scores[0]
                 existing_applicant.essay2_score = essay_scores[1]
@@ -65,7 +61,6 @@ def apply():
                 existing_applicant.essay2_feedback = essay_feedbacks[1]
                 existing_applicant.essay3_feedback = essay_feedbacks[2]
             else:
-                current_app.logger.debug("Creating new applicant")
                 new_applicant = Applicant(
                     name=form.name.data,
                     email=form.email.data,
@@ -82,29 +77,23 @@ def apply():
                 db.session.add(new_applicant)
 
             db.session.commit()
-            current_app.logger.info('Application submitted and scored successfully')
             flash('Your application has been submitted and evaluated successfully!', 'success')
             return redirect(url_for('main.confirmation'))
         except SQLAlchemyError as e:
-            current_app.logger.error(f'Database error occurred during form submission: {str(e)}')
             db.session.rollback()
             flash('A database error occurred. Please try again.', 'error')
         except Exception as e:
-            current_app.logger.error(f'Unexpected error occurred during form submission: {str(e)}')
             db.session.rollback()
             flash('An unexpected error occurred. Please try again.', 'error')
     else:
-        current_app.logger.info('Form validation failed')
         for field, errors in form.errors.items():
             for error in errors:
                 flash(f"{field.capitalize()}: {error}", 'error')
     
-    current_app.logger.info('Rendering application.html template')
     return render_template('application.html', form=form, existing_applicant=existing_applicant)
 
 @main.route('/confirmation')
 def confirmation():
-    current_app.logger.info('Entering confirmation route')
     return render_template('confirmation.html')
 
 @main.route('/admin/login', methods=['GET', 'POST'])
@@ -128,11 +117,65 @@ def admin_logout():
 @main.route('/admin/dashboard')
 @admin_required
 def admin_dashboard():
-    applicants = Applicant.query.all()
-    return render_template('admin_dashboard.html', applicants=applicants)
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+    search_form = SearchForm()
+    search_query = request.args.get('search', '')
+    sort_by = request.args.get('sort_by', 'id')
+    sort_order = request.args.get('sort_order', 'asc')
+
+    query = Applicant.query
+
+    if search_query:
+        query = query.filter((Applicant.name.ilike(f'%{search_query}%')) | (Applicant.email.ilike(f'%{search_query}%')))
+
+    if sort_by == 'total_score':
+        query = query.order_by(db.desc(Applicant.essay1_score + Applicant.essay2_score + Applicant.essay3_score)) if sort_order == 'desc' else query.order_by(Applicant.essay1_score + Applicant.essay2_score + Applicant.essay3_score)
+    elif sort_by in ['name', 'email']:
+        query = query.order_by(db.desc(getattr(Applicant, sort_by))) if sort_order == 'desc' else query.order_by(getattr(Applicant, sort_by))
+    else:
+        query = query.order_by(db.desc(Applicant.id)) if sort_order == 'desc' else query.order_by(Applicant.id)
+
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    applicants = pagination.items
+
+    total_applicants = Applicant.query.count()
+    average_score = db.session.query(db.func.avg(Applicant.essay1_score + Applicant.essay2_score + Applicant.essay3_score)).scalar() or 0
+
+    return render_template('admin_dashboard.html', 
+                           applicants=applicants, 
+                           pagination=pagination, 
+                           search_form=search_form, 
+                           search_query=search_query,
+                           sort_by=sort_by,
+                           sort_order=sort_order,
+                           total_applicants=total_applicants,
+                           average_score=average_score)
 
 @main.route('/admin/applicant/<int:id>')
 @admin_required
 def admin_applicant_detail(id):
     applicant = Applicant.query.get_or_404(id)
     return render_template('admin_applicant_detail.html', applicant=applicant)
+
+@main.route('/admin/export_csv')
+@admin_required
+def export_csv():
+    applicants = Applicant.query.all()
+    
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    writer.writerow(['ID', 'Name', 'Email', 'Essay 1 Score', 'Essay 2 Score', 'Essay 3 Score', 'Total Score'])
+    
+    for applicant in applicants:
+        total_score = (applicant.essay1_score or 0) + (applicant.essay2_score or 0) + (applicant.essay3_score or 0)
+        writer.writerow([applicant.id, applicant.name, applicant.email, 
+                         applicant.essay1_score, applicant.essay2_score, applicant.essay3_score, 
+                         total_score])
+    
+    output.seek(0)
+    return send_file(io.BytesIO(output.getvalue().encode('utf-8')),
+                     mimetype='text/csv',
+                     as_attachment=True,
+                     attachment_filename='applicants.csv')

@@ -19,3 +19,6 @@ class ApplicationForm(FlaskForm):
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
+
+class SearchForm(FlaskForm):
+    search = StringField('Search', validators=[DataRequired()])

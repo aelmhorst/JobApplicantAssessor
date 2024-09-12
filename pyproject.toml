@@ -16,6 +16,7 @@ openai = "^1.44.1"
 flask-migrate = "^4.0.7"
 wtforms = "^3.1.2"
 sqlalchemy = "^2.0.34"
+flask-paginate = "^2024.4.12"
 
 
 [build-system]
