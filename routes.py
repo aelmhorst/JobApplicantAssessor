@@ -1,10 +1,20 @@
-from flask import Blueprint, current_app, render_template, request, redirect, url_for, flash
+from flask import Blueprint, current_app, render_template, request, redirect, url_for, flash, session
 from models import db, Applicant
-from forms import ApplicationForm
+from forms import ApplicationForm, LoginForm
 from sqlalchemy.exc import SQLAlchemyError
 from ai_scoring import evaluate_essay, parse_ai_response
+from functools import wraps
 
 main = Blueprint('main', __name__)
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'admin' not in session:
+            flash('Please log in to access this page.', 'warning')
+            return redirect(url_for('main.admin_login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 @main.route('/')
 def index():
@@ -42,8 +52,8 @@ def apply():
             for i, essay in enumerate([form.essay1.data, form.essay2.data, form.essay3.data], start=1):
                 ai_response = evaluate_essay(essay, essay_prompts[i-1])
                 score, feedback = parse_ai_response(ai_response)
-                essay_scores.append(score)
-                essay_feedbacks.append(feedback)
+                essay_scores.append(score or 0)  # Use 0 if score is None
+                essay_feedbacks.append(feedback or 'No feedback available')  # Use a default message if feedback is None
 
             if existing_applicant:
                 current_app.logger.debug(f"Updating existing applicant: {existing_applicant}")
@@ -96,3 +106,33 @@ def apply():
 def confirmation():
     current_app.logger.info('Entering confirmation route')
     return render_template('confirmation.html')
+
+@main.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        if form.username.data == 'admin' and form.password.data == 'password':
+            session['admin'] = True
+            flash('You have been logged in.', 'success')
+            return redirect(url_for('main.admin_dashboard'))
+        else:
+            flash('Invalid username or password.', 'error')
+    return render_template('admin_login.html', form=form)
+
+@main.route('/admin/logout')
+def admin_logout():
+    session.pop('admin', None)
+    flash('You have been logged out.', 'success')
+    return redirect(url_for('main.index'))
+
+@main.route('/admin/dashboard')
+@admin_required
+def admin_dashboard():
+    applicants = Applicant.query.all()
+    return render_template('admin_dashboard.html', applicants=applicants)
+
+@main.route('/admin/applicant/<int:id>')
+@admin_required
+def admin_applicant_detail(id):
+    applicant = Applicant.query.get_or_404(id)
+    return render_template('admin_applicant_detail.html', applicant=applicant)

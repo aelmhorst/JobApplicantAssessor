@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Applicant Details</h2>
+<a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-secondary mb-3">Back to Dashboard</a>
+<div class="card mb-3">
+    <div class="card-body">
+        <h5 class="card-title">{{ applicant.name }}</h5>
+        <h6 class="card-subtitle mb-2 text-muted">{{ applicant.email }}</h6>
+        <p class="card-text">Total Score: {{ (applicant.essay1_score or 0) + (applicant.essay2_score or 0) + (applicant.essay3_score or 0) }}</p>
+    </div>
+</div>
+<div class="card mb-3">
+    <div class="card-body">
+        <h5 class="card-title">Essay 1</h5>
+        <p class="card-text">{{ applicant.essay1 }}</p>
+        <h6>Score: {{ applicant.essay1_score or 0 }}</h6>
+        <h6>Feedback:</h6>
+        <p>{{ applicant.essay1_feedback or 'No feedback available' }}</p>
+    </div>
+</div>
+<div class="card mb-3">
+    <div class="card-body">
+        <h5 class="card-title">Essay 2</h5>
+        <p class="card-text">{{ applicant.essay2 }}</p>
+        <h6>Score: {{ applicant.essay2_score or 0 }}</h6>
+        <h6>Feedback:</h6>
+        <p>{{ applicant.essay2_feedback or 'No feedback available' }}</p>
+    </div>
+</div>
+<div class="card mb-3">
+    <div class="card-body">
+        <h5 class="card-title">Essay 3</h5>
+        <p class="card-text">{{ applicant.essay3 }}</p>
+        <h6>Score: {{ applicant.essay3_score or 0 }}</h6>
+        <h6>Feedback:</h6>
+        <p>{{ applicant.essay3_feedback or 'No feedback available' }}</p>
+    </div>
+</div>
+{% endblock %}

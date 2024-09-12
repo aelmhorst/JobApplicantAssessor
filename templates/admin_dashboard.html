@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Admin Dashboard</h2>
+<a href="{{ url_for('main.admin_logout') }}" class="btn btn-secondary mb-3">Logout</a>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Total Score</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for applicant in applicants %}
+        <tr>
+            <td>{{ applicant.id }}</td>
+            <td>{{ applicant.name }}</td>
+            <td>{{ applicant.email }}</td>
+            <td>{{ (applicant.essay1_score or 0) + (applicant.essay2_score or 0) + (applicant.essay3_score or 0) }}</td>
+            <td>
+                <a href="{{ url_for('main.admin_applicant_detail', id=applicant.id) }}" class="btn btn-primary btn-sm">View Details</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

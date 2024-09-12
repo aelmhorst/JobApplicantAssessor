@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, TextAreaField
+from wtforms import StringField, TextAreaField, PasswordField
 from wtforms.validators import DataRequired, Email, Length
 from email_validator import validate_email, EmailNotValidError
 
@@ -15,3 +15,7 @@ class ApplicationForm(FlaskForm):
             validate_email(field.data)
         except EmailNotValidError as e:
             raise ValidationError(str(e))
+
+class LoginForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired()])
