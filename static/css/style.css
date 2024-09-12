@@ -1,0 +1,20 @@
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+}
+
+.jumbotron {
+    background-color: #f8f9fa;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border-radius: 0.3rem;
+}
+
+#application-form textarea {
+    resize: vertical;
+}
+
+.text-muted {
+    font-size: 0.875rem;
+}

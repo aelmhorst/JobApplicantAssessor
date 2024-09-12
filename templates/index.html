@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="jumbotron">
+    <h1 class="display-4">Welcome to the Job Applicant Assessment</h1>
+    <p class="lead">We're excited to learn more about you! Click the button below to start your application.</p>
+    <hr class="my-4">
+    <p>You'll be asked to answer three essay questions. Take your time and showcase your best work.</p>
+    <a class="btn btn-primary btn-lg" href="{{ url_for('main.apply') }}" role="button">Start Application</a>
+</div>
+{% endblock %}
