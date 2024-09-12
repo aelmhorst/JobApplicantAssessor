@@ -2,6 +2,7 @@ from flask import Blueprint, current_app, render_template, request, redirect, ur
 from models import db, Applicant
 from forms import ApplicationForm
 from sqlalchemy.exc import SQLAlchemyError
+from ai_scoring import evaluate_essay, parse_ai_response
 
 main = Blueprint('main', __name__)
 
@@ -28,9 +29,31 @@ def apply():
         current_app.logger.debug("Form validated successfully")
         try:
             existing_applicant = Applicant.query.filter_by(email=form.email.data).first()
+            
+            # AI Scoring
+            essay_prompts = [
+                "Describe a challenging situation you've faced in your professional life and how you overcame it.",
+                "What are your career goals for the next five years, and how does this position align with them?",
+                "Describe a time when you had to learn a new skill quickly. How did you approach the learning process?"
+            ]
+            essay_scores = []
+            essay_feedbacks = []
+            
+            for i, essay in enumerate([form.essay1.data, form.essay2.data, form.essay3.data], start=1):
+                ai_response = evaluate_essay(essay, essay_prompts[i-1])
+                score, feedback = parse_ai_response(ai_response)
+                essay_scores.append(score)
+                essay_feedbacks.append(feedback)
+
             if existing_applicant:
                 current_app.logger.debug(f"Updating existing applicant: {existing_applicant}")
                 form.populate_obj(existing_applicant)
+                existing_applicant.essay1_score = essay_scores[0]
+                existing_applicant.essay2_score = essay_scores[1]
+                existing_applicant.essay3_score = essay_scores[2]
+                existing_applicant.essay1_feedback = essay_feedbacks[0]
+                existing_applicant.essay2_feedback = essay_feedbacks[1]
+                existing_applicant.essay3_feedback = essay_feedbacks[2]
             else:
                 current_app.logger.debug("Creating new applicant")
                 new_applicant = Applicant(
@@ -38,13 +61,19 @@ def apply():
                     email=form.email.data,
                     essay1=form.essay1.data,
                     essay2=form.essay2.data,
-                    essay3=form.essay3.data
+                    essay3=form.essay3.data,
+                    essay1_score=essay_scores[0],
+                    essay2_score=essay_scores[1],
+                    essay3_score=essay_scores[2],
+                    essay1_feedback=essay_feedbacks[0],
+                    essay2_feedback=essay_feedbacks[1],
+                    essay3_feedback=essay_feedbacks[2]
                 )
                 db.session.add(new_applicant)
 
             db.session.commit()
-            current_app.logger.info('Application submitted successfully')
-            flash('Your application has been submitted successfully!', 'success')
+            current_app.logger.info('Application submitted and scored successfully')
+            flash('Your application has been submitted and evaluated successfully!', 'success')
             return redirect(url_for('main.confirmation'))
         except SQLAlchemyError as e:
             current_app.logger.error(f'Database error occurred during form submission: {str(e)}')

@@ -2,8 +2,10 @@ import os
 from flask import Flask
 from flask_wtf.csrf import CSRFProtect
 from extensions import db
+from flask_migrate import Migrate
 
 csrf = CSRFProtect()
+migrate = Migrate()
 
 def create_app():
     app = Flask(__name__)
@@ -15,14 +17,11 @@ def create_app():
     app.config['SESSION_COOKIE_HTTPONLY'] = True
     
     csrf.init_app(app)
+    db.init_app(app)
+    migrate.init_app(app, db)
 
     from routes import main as main_blueprint
     app.register_blueprint(main_blueprint)
-    
-    db.init_app(app) # init connection to db
-
-    with app.app_context():
-        db.create_all()
 
     return app
 

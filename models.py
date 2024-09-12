@@ -7,6 +7,12 @@ class Applicant(db.Model):
     essay1 = db.Column(db.Text, nullable=False)
     essay2 = db.Column(db.Text, nullable=False)
     essay3 = db.Column(db.Text, nullable=False)
+    essay1_score = db.Column(db.Integer)
+    essay2_score = db.Column(db.Integer)
+    essay3_score = db.Column(db.Integer)
+    essay1_feedback = db.Column(db.Text)
+    essay2_feedback = db.Column(db.Text)
+    essay3_feedback = db.Column(db.Text)
 
     def __repr__(self):
         return f'<Applicant {self.name}>'
