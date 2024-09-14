@@ -99,7 +99,7 @@ def confirmation():
 def admin_login():
     form = LoginForm()
     if form.validate_on_submit():
-        if form.username.data == 'admin' and form.password.data == 'password':
+        if form.username.data == 'joelean' and form.password.data == 'PuppetSc@pe':
             session['admin'] = True
             flash('You have been logged in.', 'success')
             return redirect(url_for('main.admin_dashboard'))
